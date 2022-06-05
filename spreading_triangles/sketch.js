@@ -1,5 +1,6 @@
 let vertices = [];
 let triangles = [];
+let RX_slider, RY_slider, GX_slider, GY_slider, BX_slider, BY_slider, AX_slider, AY_slider;
 const num_vertices = 120;
 const view_radius = 80;
 const max_acceleration = 0.8;
@@ -8,6 +9,11 @@ const wall_hatred = 2;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
+    RX_slider = createSlider(-1, 1, -1, 0);
+    RX_slider.position(20, 20);
+    RY_slider = createSlider(-1, 1, -1, 0);
+    RY_slider.position(20, 40);
+
     frameRate(30);
     for (let i = 0; i < num_vertices; i++) {
         vertices.push(new boid());
@@ -28,14 +34,29 @@ function draw() {
     strokeWeight(1);
     for (let i = 0; i < triangles.length; i += 3) {
         beginShape();
+        
+        let x_sum = points[triangles[i]][0] + points[triangles[i+1]][0] + points[triangles[i+2]][0];
+        let y_sum = points[triangles[i]][1] + points[triangles[i+1]][1] + points[triangles[i+2]][1];
+        let r = determine_color(x_sum, y_sum, RX_slider, RY_slider);
+        // choose the color
+        fill(r, 0, 0, 200);
 
-        fill(10, 80, (i / triangles.length)*255, 128+(i/triangles.length)*128);
-
+        // draw vertices
         vertex(points[triangles[i]][0], points[triangles[i]][1]);
         vertex(points[triangles[i+1]][0], points[triangles[i+1]][1]);
         vertex(points[triangles[i+2]][0], points[triangles[i+2]][1]);
         endShape(CLOSE);
     }
+
+    text("red X", RX_slider.x * 2 + RX_slider.width, RX_slider.y + 10);
+    text("red Y", RY_slider.x * 2 + RY_slider.width, RY_slider.y + 15);
+}
+
+function determine_color(x_sum, y_sum, x_slider, y_slider) {
+    let sum_weights = abs(x_slider.value()) + abs(y_slider.value());
+    let x_factor = x_slider.value() / sum_weights;
+    let y_factor = y_slider.value() / sum_weights;
+    return 255 * (x_factor * x_sum / (3*width) + y_factor * y_sum / (3*height));
 }
 
 class boid {
@@ -64,18 +85,16 @@ class boid {
 
     push(vertices) {
         let repel_velocities = createVector(); // separation
-        let repel = createVector();
-        let d = 0;
         let count = 0;
 
         // accumulate data
         for (const v of vertices) {
-            d = dist(this.position.x, this.position.y, v.position.x, v.position.y);
+            let d = dist(this.position.x, this.position.y, v.position.x, v.position.y);
             
             if (d < view_radius && d > 0) {
             count += 1;
             
-            repel = p5.Vector.sub(this.position, v.position); // difference in position
+            let repel = p5.Vector.sub(this.position, v.position); // difference in position
             repel.div(d*d); // scale by distance MIGHT WANT TO CHANGE THIS TO JUST D, NOT D*D
             repel_velocities.add(repel);
             }

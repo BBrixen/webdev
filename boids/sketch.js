@@ -1,9 +1,10 @@
 let vertices = [];
 const num_vertices = 100;
-const view_radius = 100;
+const view_radius = 120;
 const max_acceleration = 0.8;
 const max_velocity = 6;
 const wall_hatred = 50;
+const size = 4;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -15,9 +16,11 @@ function setup() {
 }
 
 function draw() {
-  background(220);
+  background(20);
   for (const v of vertices) {
     v.update(vertices);
+  }
+  for (const v of vertices) {
     v.show();
   }
 }
@@ -26,14 +29,21 @@ class vertex {
   constructor() {
     this.position = createVector(random(width), random(height));
     this.velocity = p5.Vector.random2D();
-    this.velocity.setMag(max_velocity);
+    this.velocity.limit(max_velocity);
     this.acceleration = createVector();
   }
   
   show() {
-    stroke(0);
-    strokeWeight(5);
-    point(this.position.x, this.position.y);
+    let direction = createVector(this.velocity.x, this.velocity.y);
+    let left = createVector(this.velocity.x, this.velocity.y);
+    direction.setMag(size);
+    left.setMag(size);
+    left.rotate(90);
+
+    fill(220);
+    triangle(this.position.x + direction.x * size, this.position.y + direction.y * size,
+            this.position.x + left.x * size, this.position.y + left.y * size,
+            this.position.x - left.x * size, this.position.y - left.y * size);
   }
   
   update(vertices) {
@@ -42,7 +52,7 @@ class vertex {
     this.acceleration = this.flock(vertices);
     // TODO: make them prioritize moving away from a close wall instead of flocking
     
-    this.acceleration.limit(max_acceleration);
+    this.acceleration.setMag(max_acceleration);
     this.velocity.setMag(max_velocity);
     this.constrain();
   }
@@ -75,7 +85,7 @@ class vertex {
         align_velocities.add(v.velocity);
         
         repel = p5.Vector.sub(this.position, v.position); // difference in position
-        repel.div(d*d); // scale by distance MIGHT WANT TO CHANGE THIS TO JUST D, NOT D*D
+        repel.div(d*d);
         repel_velocities.add(repel);
       }
     }
