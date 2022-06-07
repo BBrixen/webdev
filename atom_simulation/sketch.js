@@ -1,12 +1,22 @@
 let vertices = [];
-const num_vertices = 40;
-const view_radius = 300;
-const max_acceleration = 7;
-const max_velocity = 16;
+let speed, ratio, view_radius; // these controll the max_velocity and also the ratio of acceleration/velocity
+const num_vertices = 80;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
     frameRate(30);
+
+    speed = createSlider(0.1, 20, 10, 0.1);
+    speed.position(20, 20);
+    speed.style("width", "200px");
+
+    ratio = createSlider(0, 1, 0.5, 0.1);
+    ratio.position(20, 40);
+    ratio.style("width", "200px");
+
+    view_radius = createSlider(0, 600, 300, 0.1);
+    view_radius.position(20, 60);
+    view_radius.style("width", "200px");
 
     for (let i = 0; i < num_vertices; i++) {
         vertices.push(new vertex());
@@ -19,13 +29,19 @@ function draw() {
         v.update(vertices);
         v.show();
     }
+
+    strokeWeight(1);
+    fill(255);
+    text("max velocity", speed.x * 2 + speed.width, speed.y + 15);
+    text("acceleration:velocity ratio", ratio.x * 2 + ratio.width, ratio.y + 15);
+    text("view radius", view_radius.x * 2 + view_radius.width, view_radius.y + 15);
 }
 
 class vertex {
     constructor() {
         this.position = createVector(random(width), random(height));
         this.velocity = p5.Vector.random2D();
-        this.velocity.limit(max_velocity);
+        this.velocity.limit(speed.value());
         this.acceleration = createVector();
     }
 
@@ -40,8 +56,8 @@ class vertex {
         this.velocity.add(this.acceleration);
         this.acceleration = this.pull(vertices);
 
-        this.acceleration.limit(max_acceleration);
-        this.velocity.limit(max_velocity);
+        this.acceleration.limit(speed.value() * ratio.value());
+        this.velocity.limit(speed.value());
         this.constrain();
     }
 
@@ -52,7 +68,7 @@ class vertex {
         for (const v of vertices) {
             if (v == this) continue;
             let d = dist(this.position.x, this.position.y, v.position.x, v.position.y);
-            if (d < view_radius) {
+            if (d < view_radius.value()) {
                 accumulation.add(v.position);
                 count += 1;
             }
