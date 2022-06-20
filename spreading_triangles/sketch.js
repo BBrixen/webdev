@@ -95,15 +95,21 @@ function draw() {
     text("alpha Y", AY_slider.x * 2 + AY_slider.width, AY_slider.y + 15);
 }
 
+// Calculates the color of a given position depending on its location and the slider for that color
 function determine_color(x_avg, y_avg, x_slider, y_slider) {
-    let sum_weights = abs(x_slider.value()) + abs(y_slider.value());
-    if (sum_weights == 0) return 0;
+    // This ugly math allows us to calculate the scaling of color in x and y direction
+    // -1 * Math.floor(Math.sign(slider.value()) * 0.5) returns 1 if slider.value is negative, or 0 otherwise
+    // We want it to be 1 so we can do 1 - avg to apply the color gradient in the other direction
+    // Now we either have 1 - avg or 0 - avg = -avg (which gives us the ratio of how much color to use based on position)
+    // We then multiply this ratio by the value of the slider again, to see how strong the color should be overall
+    // In the cases when slider.value is negative, we want to multiply by -1 to make sure we get a positive answer
+    // In the cases when slider.value is positive, then -avg is negative and we still want to multiply by -1 to get a positive answer
+    // Mow we have the ratio of the color strength for this given position. we now multiply by 255 to get the 0-255 range
 
-    let x_factor = x_slider.value() * x_avg;
-    if (x_slider.value() <= 0) x_factor = -1 * x_slider.value() * (1 - x_avg);
-
-    let y_factor = y_slider.value() * y_avg;
-    if (y_slider.value() <= 0) y_factor = -1 * y_slider.value() * (1 - y_avg);
+    let x_factor = -1 * x_slider.value() * 
+        ((-1 * Math.floor(Math.sign(x_slider.value()) * 0.5)) - x_avg);
+    let y_factor = -1 * y_slider.value() * 
+        ((-1 * Math.floor(Math.sign(y_slider.value()) * 0.5)) - y_avg);
 
     return 255 * (x_factor + y_factor);
 }
