@@ -3,7 +3,7 @@ let triangles = [];
 let RX_slider, RY_slider, GX_slider, GY_slider, BX_slider, BY_slider, AX_slider, AY_slider;
 const num_vertices = 120;
 const view_radius = 80;
-const max_acceleration = 0.8;
+const max_acceleration = 0.05;
 const max_velocity = 1;
 const wall_hatred = 2;
 
@@ -150,7 +150,7 @@ class boid {
             count += 1;
             
             let repel = p5.Vector.sub(this.position, v.position); // difference in position
-            repel.div(d*d); // scale by distance MIGHT WANT TO CHANGE THIS TO JUST D, NOT D*D
+            // repel.div(d*d); // scale by distance MIGHT WANT TO CHANGE THIS TO JUST D, NOT D*D
             repel_velocities.add(repel);
             }
         }
@@ -160,7 +160,7 @@ class boid {
 
         // average data and return
         repel_velocities.div(count);
-        repel_velocities.setMag(max_velocity);
+        // repel_velocities.setMag(max_velocity);
         repel_velocities.sub(this.velocity);
         return repel_velocities;
     }
